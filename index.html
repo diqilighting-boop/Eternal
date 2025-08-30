@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星空之境 - Eternal的网页</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #6a98ff;
+            --secondary-color: #ff5e93;
+            --background-color: #0a0f2b;
+            --text-color: #ffffff;
+            --accent-color: #42e6ff;
+        }
+        
+        body {
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            background: var(--background-color);
+            position: relative;
+            height: 100vh;
+            perspective: 1000px;
+        }
+        
+        .canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #stars {
+            z-index: 1;
+        }
+        
+        #nebula {
+            z-index: 2;
+        }
+        
+        #particles {
+            z-index: 3;
+        }
+        
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 85%;
+            max-width: 900px;
+            padding: 30px;
+            background: rgba(10, 15, 40, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(100, 150, 255, 0.4);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            transition: opacity 0.8s ease;
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(106, 152, 255, 0.5);
+            animation: glow 3s infinite alternate;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: var(--accent-color);
+        }
+        
+        p {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        /* 左侧菜单触发区域 */
+        .menu-trigger {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 120px;
+            width: 25px;
+            z-index: 100;
+            background: rgba(60, 100, 200, 0.3);
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .menu-trigger:hover {
+            width: 30px;
+            background: rgba(60, 100, 200, 0.5);
+        }
+        
+        .menu-trigger i {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            animation: bounce 2s infinite;
+        }
+        
+        /* 导航菜单 */
+        .side-menu {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            height: 100%;
+            width: 300px;
+            background: linear-gradient(to right, rgba(15, 25, 60, 0.95), rgba(10, 20, 50, 0.98));
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.7);
+            transition: left 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 99;
+            padding-top: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .side-menu.active {
+            left: 0;
+        }
+        
+        .menu-item {
+            width: 80%;
+            padding: 18px 25px;
+            margin: 12px 0;
+            color: var(--text-color);
+            font-size: 1.3rem;
+            background: rgba(30, 50, 120, 0.4);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-item i {
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+        
+        .menu-item:hover {
+            background: rgba(60, 90, 200, 0.6);
+            transform: translateX(10px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 页面容器 */
+        .page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        
+        .page.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* 动画效果 */
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 10px rgba(106, 152, 255, 0.5);
+            }
+            100% {
+                text-shadow: 0 0 20px rgba(106, 152, 255, 0.8), 0 0 30px rgba(66, 230, 255, 0.6);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(0);
+            }
+            40% {
+                transform: translateX(5px);
+            }
+            60% {
+                transform: translateX(3px);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            p {
+                font-size: 1.1rem;
+            }
+            
+            .content {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .side-menu {
+                width: 250px;
+            }
+        }
+        
+        /* 流星效果 */
+        .shooting-star {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+            z-index: 4;
+            animation: shoot 1.5s linear;
+            opacity: 0;
+        }
+        
+        @keyframes shoot {
+            0% {
+                opacity: 0;
+                transform: translateX(0) translateY(0);
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(500px) translateY(250px);
+            }
+        }
+        
+        /* 星球装饰 */
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 页面切换动画 */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background-color);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas容器 -->
+    <div class="canvas-container">
+        <canvas id="stars"></canvas>
+        <canvas id="nebula"></canvas>
+        <canvas id="particles"></canvas>
+    </div>
+    
+    <!-- 流星和星球 -->
+    <div id="shooting-stars"></div>
+    <div class="planet" style="width: 120px; height: 120px; top: 15%; left: 10%; background: radial-gradient(circle at 30% 30%, #ff9a3c, #ff5e5e); box-shadow: 0 0 50px #ff5e5e55;"></div>
+    <div class="planet" style="width: 80px; height: 80px; top: 70%; left: 85%; background: radial-gradient(circle at 30% 30%, #5e9aff, #3c58ff); box-shadow: 0 0 50px #3c58ff55;"></div>
+    
+    <!-- 菜单触发区域 -->
+    <div class="menu-trigger" onmouseover="toggleMenu(true)">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+    
+    <!-- 侧边导航菜单 -->
+    <div class="side-menu" id="sideMenu" onmouseleave="toggleMenu(false)">
+        <div class="menu-item" onclick="switchPage('home')">
+            <i class="fas fa-home"></i>主页
+        </div>
+        <div class="menu-item" onclick="switchPage('about')">
+            <i class="fas fa-user"></i>个人简介
+        </div>
+        <div class="menu-item" onclick="switchPage('achievements')">
+            <i class="fas fa-trophy"></i>个人事迹
+        </div>
+        <div class="menu-item" onclick="switchPage('goals')">
+            <i class="fas fa-flag"></i>个人目标
+        </div>
+        <div class="menu-item" onclick="switchPage('hobbies')">
+            <i class="fas fa-heart"></i>个人喜爱
+        </div>
+    </div>
+    
+    <!-- 页面切换动画层 -->
+    <div class="page-transition" id="pageTransition"></div>
+    
+    <!-- 主页内容 -->
+    <div id="home" class="page active">
+        <div class="content">
+            <h1>星空之境</h1>
+            <h2>探索无限可能</h2>
+            <p>欢迎来到我的个人星空世界，这里是我的创意宇宙，展示着我的旅程、梦想和热情。</p>
+            <p>使用左侧的菜单导航，探索更多关于我的信息。</p>
+            <p class="highlight">"在浩瀚的宇宙中，每个人都是一颗独特的星星，散发着属于自己的光芒。"</p>
+        </div>
+    </div>
+    
+    <!-- 个人简介页面 -->
+    <div id="about" class="page">
+        <div class="content">
+            <h1><i class="fas fa-user"></i> 个人简介</h1>
+            <p><span class="highlight">姓名：</span>[Eternal]</p>
+            <p><span class="highlight">年龄：</span>[any]</p>
+            <p><span class="highlight">职业：</span>[代码师]</p>
+            <p><span class="highlight">教育背景：</span>[null]</p>
+            <p><span class="highlight">个人简介：</span>[null]</p>
+        </div>
+    </div>
+    
+    <!-- 个人事迹页面 -->
+    <div id="achievements" class="page">
+        <div class="content">
+            <h1><i class="fas fa-trophy"></i> 个人事迹</h1>
+            <p><span class="highlight">2023年：</span>[null]</p>
+            <p><span class="highlight">2022年：</span>[null]</p>
+            <p><span class="highlight">2021年：</span>[null]</p>
+            <p><span class="highlight">其他成就：</span>[null]</p>
+        </div>
+    </div>
+    
+    <!-- 个人目标页面 -->
+    <div id="goals" class="page">
+        <div class="content">
+            <h1><i class="fas fa-flag"></i> 个人目标</h1>
+            <p><span class="highlight">短期目标（1年内）：</span>[制作自己的网页]</p>
+            <p><span class="highlight">中期目标（1-3年）：</span>[null]</p>
+            <p><span class="highlight">长期目标（3-5年）：</span>[null]</p>
+            <p><span class="highlight">人生愿景：</span>[null]</p>
+        </div>
+    </div>
+    
+    <!-- 个人喜爱页面 -->
+    <div id="hobbies" class="page">
+        <div class="content">
+            <h1><i class="fas fa-heart"></i> 个人喜爱</h1>
+            <p><span class="highlight">兴趣爱好：</span>[写代码]</p>
+            <p><span class="highlight">喜欢的书籍：</span>[代码类]</p>
+            <p><span class="highlight">喜欢的电影：</span>[null]</p>
+            <p><span class="highlight">喜欢的音乐：</span>[payphone]</p>
+            <p><span class="highlight">其他喜好：</span>[打羽毛球]</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const starsCanvas = document.getElementById('stars');
+        const nebulaCanvas = document.getElementById('nebula');
+        const particlesCanvas = document.getElementById('particles');
+        const starsCtx = starsCanvas.getContext('2d');
+        const nebulaCtx = nebulaCanvas.getContext('2d');
+        const particlesCtx = particlesCanvas.getContext('2d');
+        const sideMenu = document.getElementById('sideMenu');
+        const pageTransition = document.getElementById('pageTransition');
+        const shootingStarsContainer = document.getElementById('shooting-stars');
+        
+        // 设置画布尺寸
+        function resizeCanvases() {
+            starsCanvas.width = window.innerWidth;
+            starsCanvas.height = window.innerHeight;
+            nebulaCanvas.width = window.innerWidth;
+            nebulaCanvas.height = window.innerHeight;
+            particlesCanvas.width = window.innerWidth;
+            particlesCanvas.height = window.innerHeight;
+        }
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            resizeCanvases();
+            createStars();
+            createNebula();
+            createParticles();
+            animate();
+            createShootingStars();
+        });
+        
+        window.addEventListener('resize', () => {
+            resizeCanvases();
+            createStars();
+            createNebula();
+            createParticles();
+        });
+        
+        // 星星数组
+        let stars = [];
+        let nebulaParticles = [];
+        let particles = [];
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        // 跟踪鼠标位置
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            // 添加鼠标粒子效果
+            if (Math.random() > 0.7) {
+                addParticle(mouseX, mouseY);
+            }
+        });
+        
+        // 创建星星
+        function createStars() {
+            stars = [];
+            const count = Math.max(starsCanvas.width, starsCanvas.height) * 0.8;
+            
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * starsCanvas.width,
+                    y: Math.random() * starsCanvas.height,
+                    radius: Math.random() * 1.5 + 0.5,
+                    speed: Math.random() * 0.5 + 0.1,
+                    opacity: Math.random() * 0.7 + 0.3,
+                    direction: Math.random() > 0.5 ? 1 : -1,
+                    twinkleSpeed: Math.random() * 0.05 + 0.01
+                });
+            }
+            
+            // 创建银河
+            createGalaxy();
+        }
+        
+        // 创建银河效果
+        function createGalaxy() {
+            const centerX = starsCanvas.width / 2;
+            const centerY = starsCanvas.height / 2;
+            const count = 4000;
+            
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * Math.min(starsCanvas.width, starsCanvas.height) * 0.4;
+                const spread = Math.random() * 60 - 30;
+                
+                stars.push({
+                    x: centerX + Math.cos(angle) * distance + spread,
+                    y: centerY + Math.sin(angle) * distance * 0.3 + spread,
+                    radius: Math.random() * 1.2,
+                    speed: Math.random() * 0.2,
+                    opacity: Math.random() * 0.7 + 0.3,
+                    direction: Math.random() > 0.5 ? 1 : -1,
+                    twinkleSpeed: Math.random() * 0.03 + 0.01,
+                    isGalaxy: true
+                });
+            }
+        }
+        
+        // 创建星云效果
+        function createNebula() {
+            nebulaParticles = [];
+            const count = 200;
+            const centerX = nebulaCanvas.width * 0.7;
+            const centerY = nebulaCanvas.height * 0.3;
+            
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 250;
+                
+                nebulaParticles.push({
+                    x: centerX + Math.cos(angle) * distance,
+                    y: centerY + Math.sin(angle) * distance,
+                    radius: Math.random() * 80 + 40,
+                    color: `rgba(${Math.random() * 50 + 100}, ${Math.random() * 50 + 50}, ${Math.random() * 100 + 150}, ${Math.random() * 0.1 + 0.03})`,
+                    driftX: (Math.random() - 0.5) * 0.2,
+                    driftY: (Math.random() - 0.5) * 0.2
+                });
+            }
+        }
+        
+        // 创建粒子
+        function createParticles() {
+            particles = [];
+            // 初始创建一些粒子
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * particlesCanvas.width,
+                    y: Math.random() * particlesCanvas.height,
+                    radius: Math.random() * 2 + 1,
+                    color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2})`,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: (Math.random() - 0.5) * 0.5,
+                    life: Math.random() * 100 + 50
+                });
+            }
+        }
+        
+        // 添加粒子
+        function addParticle(x, y) {
+            particles.push({
+                x: x,
+                y: y,
+                radius: Math.random() * 3 + 1,
+                color: `rgba(${Math.random() * 100 + 150}, ${Math.random() * 100 + 150}, 255, ${Math.random() * 0.5 + 0.3})`,
+                speedX: (Math.random() - 0.5) * 2,
+                speedY: (Math.random() - 0.5) * 2,
+                life: Math.random() * 50 + 30
+            });
+        }
+        
+        // 创建流星
+        function createShootingStars() {
+            // 定期创建流星
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const star = document.createElement('div');
+                    star.className = 'shooting-star';
+                    star.style.left = Math.random() * window.innerWidth * 0.8 + 'px';
+                    star.style.top = Math.random() * window.innerHeight * 0.5 + 'px';
+                    star.style.width = Math.random() * 100 + 50 + 'px';
+                    star.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+                    shootingStarsContainer.appendChild(star);
+                    
+                    // 动画结束后移除
+                    setTimeout(() => {
+                        shootingStarsContainer.removeChild(star);
+                    }, 1500);
+                }
+            }, 3000);
+        }
+        
+        // 动画循环
+        function animate() {
+            starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+            nebulaCtx.clearRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+            particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            
+            // 绘制星星
+            stars.forEach(star => {
+                starsCtx.beginPath();
+                starsCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                
+                // 星星闪烁效果
+                const opacity = 0.8 + 0.2 * Math.sin(Date.now() * 0.001 * star.twinkleSpeed * star.direction);
+                starsCtx.fillStyle = `rgba(255, 255, 255, ${star.isGalaxy ? star.opacity : opacity})`;
+                
+                starsCtx.fill();
+                
+                // 移动星星
+                if (!star.isGalaxy) {
+                    star.x += star.speed * 0.1;
+                    if (star.x > starsCanvas.width) star.x = 0;
+                }
+            });
+            
+            // 绘制星云
+            nebulaParticles.forEach(particle => {
+                nebulaCtx.beginPath();
+                nebulaCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                
+                const gradient = nebulaCtx.createRadialGradient(
+                    particle.x, particle.y, 0,
+                    particle.x, particle.y, particle.radius
+                );
+                gradient.addColorStop(0, particle.color);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                nebulaCtx.fillStyle = gradient;
+                nebulaCtx.fill();
+                
+                // 星云粒子漂移
+                particle.x += particle.driftX;
+                particle.y += particle.driftY;
+                
+                // 边界检查
+                if (particle.x < -particle.radius || particle.x > nebulaCanvas.width + particle.radius ||
+                    particle.y < -particle.radius || particle.y > nebulaCanvas.height + particle.radius) {
+                    particle.x = Math.random() * nebulaCanvas.width;
+                    particle.y = Math.random() * nebulaCanvas.height;
+                }
+            });
+            
+            // 绘制粒子
+            particles.forEach((particle, index) => {
+                particlesCtx.beginPath();
+                particlesCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                particlesCtx.fillStyle = particle.color;
+                particlesCtx.fill();
+                
+                // 移动粒子
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.life--;
+                
+                // 生命结束或超出边界的粒子移除
+                if (particle.life <= 0 || 
+                    particle.x < -particle.radius || particle.x > particlesCanvas.width + particle.radius ||
+                    particle.y < -particle.radius || particle.y > particlesCanvas.height + particle.radius) {
+                    particles.splice(index, 1);
+                    // 添加新粒子保持数量
+                    addParticle(
+                        Math.random() * particlesCanvas.width,
+                        Math.random() * particlesCanvas.height
+                    );
+                }
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 切换菜单显示
+        function toggleMenu(show) {
+            sideMenu.classList.toggle('active', show);
+        }
+        
+        // 页面切换函数
+        function switchPage(pageId) {
+            // 获取当前活动页面
+            const currentPage = document.querySelector('.page.active');
+            
+            // 如果点击的是当前页面，不做任何事
+            if (currentPage.id === pageId) {
+                toggleMenu(false);
+                return;
+            }
+            
+            // 显示页面切换动画
+            pageTransition.style.opacity = '1';
+            pageTransition.style.pointerEvents = 'all';
+            
+            // 添加粒子爆发效果
+            for (let i = 0; i < 100; i++) {
+                addParticle(
+                    window.innerWidth / 2,
+                    window.innerHeight / 2
+                );
+            }
+            
+            setTimeout(() => {
+                // 隐藏所有页面
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // 显示选中的页面
+                document.getElementById(pageId).classList.add('active');
+                
+                // 隐藏页面切换动画
+                setTimeout(() => {
+                    pageTransition.style.opacity = '0';
+                    pageTransition.style.pointerEvents = 'none';
+                }, 500);
+                
+                // 关闭菜单
+                toggleMenu(false);
+            }, 800);
+        }
+        
+        // 初始隐藏除主页外的所有页面
+        document.querySelectorAll('.page:not(#home)').forEach(page => {
+            page.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
