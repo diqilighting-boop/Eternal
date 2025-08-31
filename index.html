@@ -20,6 +20,8 @@
             --accent-color: #42e6ff;
             --link-color: #9b30f9;
             --link-hover: #bf3eff;
+            --comment-bg: rgba(20, 25, 50, 0.8);
+            --comment-border: #6a5acd;
         }
         
         body {
@@ -59,6 +61,10 @@
             z-index: 3;
         }
         
+        #rings {
+            z-index: 4;
+        }
+        
         .content {
             position: absolute;
             top: 50%;
@@ -67,6 +73,7 @@
             text-align: center;
             width: 85%;
             max-width: 900px;
+            max-height: 80vh;
             padding: 30px;
             background: rgba(10, 15, 40, 0.7);
             border-radius: 20px;
@@ -74,6 +81,7 @@
             backdrop-filter: blur(10px);
             z-index: 10;
             transition: opacity 0.8s ease;
+            overflow-y: auto;
         }
         
         h1 {
@@ -91,6 +99,15 @@
             font-size: 2rem;
             margin-bottom: 25px;
             color: var(--accent-color);
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 15px;
+            color: var(--accent-color);
+            text-align: left;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
         }
         
         p {
@@ -229,6 +246,112 @@
             opacity: 1;
         }
         
+        /* 评论区样式 */
+        .comments-section {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .comment {
+            background: var(--comment-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--comment-border);
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+        }
+        
+        .comment-author {
+            font-weight: bold;
+        }
+        
+        .comment-date {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .comment-content {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .comment-reply {
+            background: rgba(30, 40, 70, 0.7);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .reply-form {
+            margin-top: 10px;
+        }
+        
+        .comment-form {
+            margin-top: 20px;
+            background: var(--comment-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--comment-border);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(106, 90, 205, 0.5);
+            border-radius: 5px;
+            background: rgba(15, 20, 40, 0.7);
+            color: var(--text-color);
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-reply {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+        
         /* 动画效果 */
         @keyframes glow {
             0% {
@@ -281,6 +404,10 @@
             
             .side-menu {
                 width: 250px;
+            }
+            
+            .comment-form {
+                padding: 15px;
             }
         }
         
@@ -337,6 +464,7 @@
         <canvas id="stars"></canvas>
         <canvas id="nebula"></canvas>
         <canvas id="particles"></canvas>
+        <canvas id="rings"></canvas>
     </div>
     
     <!-- 流星和星球 -->
@@ -365,6 +493,9 @@
         </div>
         <div class="menu-item" onclick="switchPage('hobbies')">
             <i class="fas fa-heart"></i>个人喜爱
+        </div>
+        <div class="menu-item" onclick="switchPage('messageBoard')">
+            <i class="fas fa-comments"></i>留言板
         </div>
     </div>
     
@@ -427,18 +558,46 @@
             <p><span class="highlight">其他喜好：</span>打羽毛球</p>
         </div>
     </div>
+    
+    <!-- 留言板页面 -->
+    <div id="messageBoard" class="page">
+        <div class="content">
+            <h1><i class="fas fa-comments"></i> 留言板</h1>
+            <p>欢迎留下您的评论或问题，我会尽快回复！</p>
+            
+            <div class="comments-section" id="commentsContainer">
+                <!-- 评论将通过JavaScript动态加载 -->
+            </div>
+            
+            <div class="comment-form">
+                <h3>发表评论</h3>
+                <div class="form-group">
+                    <label for="nickname">昵称：</label>
+                    <input type="text" id="nickname" placeholder="请输入您的昵称">
+                </div>
+                <div class="form-group">
+                    <label for="comment">评论内容：</label>
+                    <textarea id="comment" placeholder="请输入您的评论"></textarea>
+                </div>
+                <button class="btn" onclick="addComment()">发表评论</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // 获取DOM元素
         const starsCanvas = document.getElementById('stars');
         const nebulaCanvas = document.getElementById('nebula');
         const particlesCanvas = document.getElementById('particles');
+        const ringsCanvas = document.getElementById('rings');
         const starsCtx = starsCanvas.getContext('2d');
         const nebulaCtx = nebulaCanvas.getContext('2d');
         const particlesCtx = particlesCanvas.getContext('2d');
+        const ringsCtx = ringsCanvas.getContext('2d');
         const sideMenu = document.getElementById('sideMenu');
         const pageTransition = document.getElementById('pageTransition');
         const shootingStarsContainer = document.getElementById('shooting-stars');
+        const commentsContainer = document.getElementById('commentsContainer');
         
         // 设置画布尺寸
         function resizeCanvases() {
@@ -448,6 +607,8 @@
             nebulaCanvas.height = window.innerHeight;
             particlesCanvas.width = window.innerWidth;
             particlesCanvas.height = window.innerHeight;
+            ringsCanvas.width = window.innerWidth;
+            ringsCanvas.height = window.innerHeight;
         }
         
         // 初始化
@@ -456,8 +617,10 @@
             createStars();
             createNebula();
             createParticles();
+            createRings();
             animate();
             createShootingStars();
+            loadComments();
         });
         
         window.addEventListener('resize', () => {
@@ -465,12 +628,14 @@
             createStars();
             createNebula();
             createParticles();
+            createRings();
         });
         
         // 星星数组
         let stars = [];
         let nebulaParticles = [];
         let particles = [];
+        let rings = [];
         let mouseX = 0;
         let mouseY = 0;
         
@@ -568,6 +733,47 @@
             }
         }
         
+        // 创建粒子环
+        function createRings() {
+            rings = [];
+            const ringCount = 5;
+            const centerX = ringsCanvas.width / 2;
+            const centerY = ringsCanvas.height / 2;
+            
+            for (let i = 0; i < ringCount; i++) {
+                const radius = 100 + i * 60;
+                const particleCount = 80 + i * 20;
+                const speed = 0.002 + i * 0.001;
+                const colors = [
+                    `hsl(${260 + i * 10}, 100%, 70%)`,
+                    `hsl(${240 + i * 10}, 100%, 60%)`,
+                    `hsl(${220 + i * 10}, 100%, 65%)`
+                ];
+                
+                const ringParticles = [];
+                for (let j = 0; j < particleCount; j++) {
+                    const angle = (j / particleCount) * Math.PI * 2;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    ringParticles.push({
+                        x,
+                        y,
+                        angle,
+                        radius,
+                        size: Math.random() * 3 + 1,
+                        color: colors[j % colors.length],
+                        speed: speed * (0.8 + Math.random() * 0.4)
+                    });
+                }
+                
+                rings.push({
+                    particles: ringParticles,
+                    rotation: Math.random() * Math.PI * 2
+                });
+            }
+        }
+        
         // 添加粒子
         function addParticle(x, y) {
             particles.push({
@@ -607,6 +813,7 @@
             starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
             nebulaCtx.clearRect(0, 0, nebulaCanvas.width, nebulaCanvas.height);
             particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            ringsCtx.clearRect(0, 0, ringsCanvas.width, ringsCanvas.height);
             
             // 绘制星星
             stars.forEach(star => {
@@ -678,6 +885,25 @@
                 }
             });
             
+            // 绘制粒子环
+            const time = Date.now() * 0.001;
+            rings.forEach(ring => {
+                ring.rotation += 0.001;
+                
+                ring.particles.forEach(particle => {
+                    const x = ringsCanvas.width / 2 + Math.cos(particle.angle + ring.rotation) * particle.radius;
+                    const y = ringsCanvas.height / 2 + Math.sin(particle.angle + ring.rotation) * particle.radius;
+                    
+                    ringsCtx.beginPath();
+                    ringsCtx.arc(x, y, particle.size, 0, Math.PI * 2);
+                    ringsCtx.fillStyle = particle.color;
+                    ringsCtx.fill();
+                    
+                    // 更新粒子角度
+                    particle.angle += particle.speed;
+                });
+            });
+            
             requestAnimationFrame(animate);
         }
         
@@ -718,6 +944,11 @@
                 // 显示选中的页面
                 document.getElementById(pageId).classList.add('active');
                 
+                // 如果是留言板页面，刷新评论
+                if (pageId === 'messageBoard') {
+                    loadComments();
+                }
+                
                 // 隐藏页面切换动画
                 setTimeout(() => {
                     pageTransition.style.opacity = '0';
@@ -738,6 +969,198 @@
                 }, 200);
             });
         });
+        
+        // 评论功能
+        function loadComments() {
+            // 从localStorage加载评论
+            let comments = JSON.parse(localStorage.getItem('starComments')) || [];
+            const now = new Date();
+            const fiftyDaysAgo = new Date(now.getTime() - 50 * 24 * 60 * 60 * 1000);
+            
+            // 过滤掉50天前的评论
+            comments = comments.filter(comment => new Date(comment.date) > fiftyDaysAgo);
+            
+            // 保存过滤后的评论
+            localStorage.setItem('starComments', JSON.stringify(comments));
+            
+            // 清空评论容器
+            commentsContainer.innerHTML = '';
+            
+            // 添加评论到页面
+            comments.forEach(comment => {
+                const commentElement = createCommentElement(comment);
+                commentsContainer.appendChild(commentElement);
+            });
+            
+            // 如果没有评论，显示提示
+            if (comments.length === 0) {
+                commentsContainer.innerHTML = '<p>暂无评论，快来发表第一条评论吧！</p>';
+            }
+        }
+        
+        function createCommentElement(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment';
+            
+            const commentHeader = document.createElement('div');
+            commentHeader.className = 'comment-header';
+            commentHeader.innerHTML = `
+                <span class="comment-author">${comment.nickname}</span>
+                <span class="comment-date">${formatDate(comment.date)}</span>
+            `;
+            
+            const commentContent = document.createElement('div');
+            commentContent.className = 'comment-content';
+            commentContent.textContent = comment.content;
+            
+            commentDiv.appendChild(commentHeader);
+            commentDiv.appendChild(commentContent);
+            
+            // 添加回复按钮
+            const replyButton = document.createElement('button');
+            replyButton.className = 'btn btn-reply';
+            replyButton.textContent = '回复';
+            replyButton.onclick = function() {
+                showReplyForm(comment.id, commentDiv);
+            };
+            commentDiv.appendChild(replyButton);
+            
+            // 添加回复
+            if (comment.replies && comment.replies.length > 0) {
+                const repliesContainer = document.createElement('div');
+                repliesContainer.className = 'replies-container';
+                
+                comment.replies.forEach(reply => {
+                    const replyElement = document.createElement('div');
+                    replyElement.className = 'comment-reply';
+                    
+                    const replyHeader = document.createElement('div');
+                    replyHeader.className = 'comment-header';
+                    replyHeader.innerHTML = `
+                        <span class="comment-author">${reply.nickname}</span>
+                        <span class="comment-date">${formatDate(reply.date)}</span>
+                    `;
+                    
+                    const replyContent = document.createElement('div');
+                    replyContent.className = 'comment-content';
+                    replyContent.textContent = reply.content;
+                    
+                    replyElement.appendChild(replyHeader);
+                    replyElement.appendChild(replyContent);
+                    repliesContainer.appendChild(replyElement);
+                });
+                
+                commentDiv.appendChild(repliesContainer);
+            }
+            
+            return commentDiv;
+        }
+        
+        function showReplyForm(commentId, commentElement) {
+            // 移除现有的回复表单
+            const existingForm = commentElement.querySelector('.reply-form');
+            if (existingForm) {
+                existingForm.remove();
+                return;
+            }
+            
+            const replyForm = document.createElement('div');
+            replyForm.className = 'reply-form';
+            replyForm.innerHTML = `
+                <div class="form-group">
+                    <input type="text" placeholder="您的昵称" class="reply-nickname">
+                </div>
+                <div class="form-group">
+                    <textarea placeholder="回复内容" class="reply-content"></textarea>
+                </div>
+                <button class="btn" onclick="addReply(${commentId}, this)">提交回复</button>
+            `;
+            
+            commentElement.appendChild(replyForm);
+        }
+        
+        function addComment() {
+            const nickname = document.getElementById('nickname').value.trim();
+            const content = document.getElementById('comment').value.trim();
+            
+            if (!nickname || !content) {
+                alert('请填写昵称和评论内容');
+                return;
+            }
+            
+            // 获取现有评论
+            let comments = JSON.parse(localStorage.getItem('starComments')) || [];
+            
+            // 添加新评论
+            const newComment = {
+                id: Date.now(),
+                nickname,
+                content,
+                date: new Date().toISOString(),
+                replies: []
+            };
+            
+            comments.push(newComment);
+            
+            // 保存到localStorage
+            localStorage.setItem('starComments', JSON.stringify(comments));
+            
+            // 清空表单
+            document.getElementById('nickname').value = '';
+            document.getElementById('comment').value = '';
+            
+            // 重新加载评论
+            loadComments();
+            
+            // 显示成功消息
+            alert('评论发表成功！');
+        }
+        
+        function addReply(commentId, button) {
+            const replyForm = button.parentElement;
+            const nickname = replyForm.querySelector('.reply-nickname').value.trim();
+            const content = replyForm.querySelector('.reply-content').value.trim();
+            
+            if (!nickname || !content) {
+                alert('请填写昵称和回复内容');
+                return;
+            }
+            
+            // 获取现有评论
+            let comments = JSON.parse(localStorage.getItem('starComments')) || [];
+            
+            // 找到要回复的评论
+            const commentIndex = comments.findIndex(c => c.id === commentId);
+            if (commentIndex === -1) {
+                alert('评论不存在');
+                return;
+            }
+            
+            // 添加回复
+            const newReply = {
+                id: Date.now(),
+                nickname,
+                content,
+                date: new Date().toISOString()
+            };
+            
+            comments[commentIndex].replies = comments[commentIndex].replies || [];
+            comments[commentIndex].replies.push(newReply);
+            
+            // 保存到localStorage
+            localStorage.setItem('starComments', JSON.stringify(comments));
+            
+            // 重新加载评论
+            loadComments();
+            
+            // 显示成功消息
+            alert('回复成功！');
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        }
         
         // 初始隐藏除主页外的所有页面
         document.querySelectorAll('.page:not(#home)').forEach(page => {
